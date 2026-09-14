@@ -1,0 +1,47 @@
+// VERCEL / PRODUCTION: PostgreSQL (Neon free ekak use karanna: https://neon.tech)
+// Meka use karanna: prisma/schema.prisma file eka me file eken replace karanna,
+// passe `npx prisma db push` run karanna.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  username     String    @unique
+  passwordHash String
+  role         String    @default("user") // "user" | "admin"
+  coins        Int       @default(0)
+  apiKey       String    @unique
+  createdAt    DateTime  @default(now())
+  orders       Order[]
+  txns         CoinTransaction[]
+}
+
+model Order {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  serviceId  String
+  serviceName String
+  quantity   Int
+  priceLkr   Float
+  status     String   @default("processing")
+  providerOrderId String?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+}
+
+model CoinTransaction {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  amount    Int      // + add, - spend
+  reason    String
+  byAdmin   String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
